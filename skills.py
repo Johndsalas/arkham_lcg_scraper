@@ -1,11 +1,18 @@
+''' Contains code for scraping info for skill cards'''
+
+# Imports
+
+import requests
+import re
+from bs4 import BeautifulSoup
+import pandas as pd
 
 
-##########################Getting skill card info and creating a data frame###################
-
-def get_skills_df(skills):
-    ''' Child of main
+def get_skills_df(skill_urls):
+    ''' 
         Takes in urls for skill cards and 
-        Returns a df of the card info'''
+        Returns a df of the card info
+                                        '''
 
     # dictionary with empty traits
     skill_traits = {'title':[],
@@ -22,7 +29,7 @@ def get_skills_df(skills):
     print("Getting skill cards")
 
     # for each url get player card info from that page and add each element to skill_traits
-    for url in skills:
+    for url in skill_urls:
 
         # make html request to arkham db and parse using BS
         results = get_soup(url)
@@ -89,9 +96,6 @@ def get_card_traits(results):
     expansion = results.find('div', class_='card-pack').text.replace('\n', '').replace('\t', '').replace('.', '')
 
     return title, xp, test_icons, traits, faction, ability, tipe, flavor, artist, expansion
-
-
-############# Children of get_card_traits ############## 
 
 
 def get_xp(results):
@@ -177,9 +181,6 @@ def get_ability_html(results):
 def get_ability_string(ability):
     '''Child of get_ability
        Takes in html object contining player card ability text
-       Converts object to a string
-       Replaces html indicating an icon with uppercase word equivalent
-       Performs minor cleaning
        Returns a string containing the cards ability text'''
       
     # convert html to string
@@ -211,9 +212,3 @@ def get_ability_string(ability):
         ability = ability.replace(item,'')
 
     return ability
-
-
-
-if __name__ == "__main__":
-
-    main()
