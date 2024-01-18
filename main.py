@@ -31,7 +31,7 @@ def main():
     print("Process Complete!")
 
 
-################################# Getting URL's by card type ####################################
+################################# Get URL's by card type ####################################
 
 def get_urls_by_type():
     '''Child of main
@@ -76,4 +76,7 @@ def get_cata_url(catagory):
 
     return results
 
-main()
+if __name__ == "__main__":
+
+    main()
+

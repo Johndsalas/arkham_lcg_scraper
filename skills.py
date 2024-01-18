@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 
 
+
 def get_skills_df(skill_urls):
     ''' 
         Takes in urls for skill cards and 
@@ -54,7 +55,7 @@ def get_skills_df(skill_urls):
 
     return df_skill
 
-
+##########################################Get soup request#########################################################
 def get_soup(url):
     '''Child of get_skills_df
        Takes in a url for a card
@@ -67,6 +68,7 @@ def get_soup(url):
 
     # locate urls on page and return
     return soup.find(id='list')
+
 
 
 def get_card_traits(results):
