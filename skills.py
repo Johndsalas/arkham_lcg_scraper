@@ -87,7 +87,7 @@ def get_card_traits(results):
 
     faction = results.find('span', class_='card-faction').text.replace('\n', '').replace('\t', '')
 
-    ability = get_ability(results)
+    ability = get_ability(results, faction)
 
     tipe = results.find('span', class_='card-type').text.replace('\n', '').replace('\t', '')
 
@@ -117,7 +117,7 @@ def get_xp(results):
     # otherwise return perform minor cleaning on value and return
     else:
         
-        return xp.text.replace('\n', '').replace('\t', '')
+        return re.search('[0-9]', str(xp)).group()
 
 
 def get_icons(results):
@@ -144,72 +144,74 @@ def get_icons(results):
     return icons.upper()[:-1]
 
 
-def get_ability(results):
+def get_ability(results, faction):
     '''Child of get_card_traits
         Takes in request results for an arkhamdb page containing player card data
         Returns a string represintation of skill test icons on the card'''
     
-    # gets html object containing ability text
-    ability = get_ability_html(results)
+    # gets html object and convert to string
+    ability_string = str(results.find('div', class_=f'card-text border-{faction.lower()}'))
     
-    # convert html to string and replace icons in text with string represintations
-    ability = get_ability_string(ability)
+    # convert html to string, replace icons in text with string represintations
+    ability_text = clean_ability_string(ability_string)
     
-    return ability
+    return ability_text
 
 
 ############################### Children of get_ability ############################
 
-def get_ability_html(results):
-    '''Child of get_ability
-       Takes in request results for an arkhamdb page containing player card data
-       Returns a string containing ability text of the card'''
 
-    # itterate through factions to find class name for ability text and get bs object containing text
-    factions = ['guardian', 'mystic', 'neutral', 'rogue', 'seeker', 'survivor']
-
-    for faction in factions:
-
-        ability = results.find('div', class_=f'card-text border-{faction}')
-        
-        # break loop if result is found
-        if ability != None:
-
-            break
-            
-    return ability
-
-
-def get_ability_string(ability):
-    '''Child of get_ability
-       Takes in html object contining player card ability text
-       Returns a string containing the cards ability text'''
-      
-    # convert html to string
-    ability = str(ability)
-        
-    # replace icon html with matching uppercase word
-    icon_types = ['wild', 'willpower', 'combat', 'agility', 'intellect']
+def clean_ability_string(ability):
+    
+    # replace icon html with matching word in all caps
+    icon_types = [
+                  'reaction',
+                  'wild', 
+                  'willpower', 
+                  'combat', 
+                  'agility', 
+                  'intellect', 
+                  'wild',
+                  'curse', 
+                  'bless',
+                  'rogue',
+                  'survivor',
+                  'seeker',
+                  'guardian',
+                  'mystic',
+                  'neutral',
+                  'skull',
+                  'tablet',
+                  'cultist',
+                  'elder sign']
     
     for icon in icon_types:
     
         ability = ability.replace(f'<span class="icon-{icon}" title="{icon.capitalize()}"></span>', 
                                   f'{icon.upper()}')
+        
+        ability = ability.replace(f'<div class="card-text border-{icon}">\n<p>', '')
+
+    ability = ability.replace(f'<span class="icon-wild" title="Any Skill"></span>', 'WILD')
+
+    ability = ability.replace(f'<span class="icon-elder_sign" title="Elder Sign"></span>', 'ELDER_SIGN')
+
+    ability = ability.replace(f'<span class="icon-elder_sign" title="Elder Thing"></span>', 'ELDER_THING')
 
     # delete extraneous html
-    html = ['<div class="card-text border-rogue">\n<p>',
-            '<div class="card-text border-survivor">\n<p>',
-            '<div class="card-text border-seeker">\n<p>',
-            '<div class="card-text border-guardian">\n<p>',
-            '<div class="card-text border-mystic">\n<p>',
-            '<div class="card-text border-neutral">\n<p>',
+    dirt = [
             '</p>\n</div>',
             '</p>',
             '<p>',
             '<b>',
-            '<1>',]
+            '</b>',
+            '<br/',
+            '<1>',
+            '<i>',
+            '</i>',
+            '><span>',]
     
-    for item in html:
+    for item in dirt:
         
         ability = ability.replace(item,'')
 
