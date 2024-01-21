@@ -6,7 +6,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import pandas as pd
-
+from helper import get_soup, get_text_for_icon, clean_html
 
 def get_invest_df(invest):
 
@@ -26,7 +26,8 @@ def get_invest_df(invest):
                             'flavor':[],
                             'deck_size':[],
                             'deck_options':[],
-                            'must_include':[]}
+                            'must_include':[],
+                            'setup':[]}
 
     # for each url get player card info from that page and add each element to skill_traits
     for url in invest:
@@ -48,20 +49,6 @@ def get_invest_df(invest):
 
     return pd.DataFrame(investigator_traits)
 
-
-def get_soup(url):
-    '''Takes in a url for a card
-       Returns html request result parsed using beautiful soup'''
-
-    # create request and soup objects
-    html = requests.get(url)
-
-    soup = BeautifulSoup(html.content, 'html.parser')
-
-    # locate urls on page and return
-    return soup.find(id='list')
-
-
 def get_invest_traits(results):
     '''Scrapes website for investigator card data
        Returns a list of those values'''
@@ -78,7 +65,9 @@ def get_invest_traits(results):
 
     health, sanity = get_stam_line(results)
    
-    ability = clean_ability_string(results, faction)
+    ability = str(results.find('div', class_=f'card-text border-{faction.lower()}'))
+
+    ability = clean_html(get_text_for_icon(ability))
 
     artist = results.find('div', class_='card-illustrator').text.replace('\n', '').replace('\t', '')
 
@@ -92,7 +81,7 @@ def get_invest_traits(results):
         
         flavor = ''
         
-    deck_size, deck_options, must_include = get_deck_reqs(results, faction)
+    deck_size, deck_options, must_include, setup = get_deck_reqs(results, faction)
     
     return [title, 
             faction, 
@@ -110,7 +99,8 @@ def get_invest_traits(results):
             flavor,
             deck_size,
             deck_options,
-            must_include]
+            must_include,
+            setup]
 
 
 def get_stat_line(results):
@@ -134,79 +124,28 @@ def get_stam_line(results):
 
 
 def get_deck_reqs(results, faction):
-    ''' scrapes website for investigator deckbuilding requirements'''
 
     deck = results.find_all('div', class_=f'card-text border-{faction.lower()}')[1].text
 
-    deck_split = re.split(':', deck)
+    pattern = r'(?:\b(?:Deck Size|Deckbuilding Options|Deckbuilding Requirements|Additional Setup):|\b\s*)([^:\n]+)'
 
-    deck_size = re.search('[0-9]{2}', deck_split[1]).group()
-    
-    deck_options = re.search('^(.*?\.)', deck_split[2]).group()[1:-1].replace('(', '').replace(')', '').replace('  ', ' ')
+    deck_split = re.findall(pattern, str(deck))
 
-    must_include = re.search('^(.*?\.)', deck_split[3]).group()[1:-1].replace('(', '').replace(')', '').replace('  ', ' ')
-    
-    return deck_size, deck_options, must_include
+    deck_size = re.search('[0-9]{2}', deck_split[0]).group()
+
+    deck_options = deck_split[1].replace('Deckbuilding Requirements (do not count toward deck size)', '').replace('(', '').replace(')', '').replace('  ', ' ')
+
+    must_include = deck_split[2].replace('.Additional Setup', '')
+
+    try:
+
+        setup = deck_split[3]
+
+    except:
+
+        setup = 'NONE'
+
+    return deck_size, deck_options, must_include, setup
 
 
-def clean_ability_string(results, faction):
-    
-    ability = str(results.find('div', class_=f'card-text border-{faction.lower()}'))
 
-    # replace icon html with matching word in all caps
-    icon_types = [
-                  'action',
-                  'reaction',
-                  'wild', 
-                  'willpower', 
-                  'combat', 
-                  'agility', 
-                  'intellect', 
-                  'wild',
-                  'curse', 
-                  'bless',
-                  'rogue',
-                  'survivor',
-                  'seeker',
-                  'guardian',
-                  'mystic',
-                  'neutral',
-                  'skull',
-                  'tablet',
-                  'cultist',
-                  'elder sign']
-    
-    for icon in icon_types:
-    
-        ability = ability.replace(f'<span class="icon-{icon}" title="{icon.capitalize()}"></span>', 
-                                  f'{icon.upper()}')
-        
-        ability = ability.replace(f'<div class="card-text border-{icon}">\n<p>', '')
-
-    ability = ability.replace(f'<span class="icon-wild" title="Any Skill"></span>', 'WILD')
-
-    ability = ability.replace(f'<span class="icon-elder_sign" title="Elder Sign"></span>', 'ELDER_SIGN')
-
-    ability = ability.replace(f'<span class="icon-elder_sign" title="Elder Thing"></span>', 'ELDER_THING')
-
-    ability = ability.replace(f'<span class="icon-lightning" title="Fast Action"></span>', 'FAST ACTION')
-
-    ability = ability.replace(f'<span class="icon-auto_fail" title="Auto Fail"></span>', 'TENTACLES')
-    # delete extraneous html
-    dirt = [
-            '</p>\n</div>',
-            '</p>',
-            '<p>',
-            '<b>',
-            '</b>',
-            '<br/',
-            '<1>',
-            '<i>',
-            '</i>',
-            '><span>',]
-    
-    for item in dirt:
-        
-        ability = ability.replace(item,'')
-
-    return ability
