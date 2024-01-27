@@ -141,66 +141,10 @@ def get_ability(results, faction):
     ability_string = str(results.find('div', class_=f'card-text border-{faction.lower()}'))
     
     # convert html to string, replace icons in text with string represintations
-    ability_text = clean_ability_string(ability_string)
+    ability_text = get_text_for_icon(ability_string)
+
+    ability_text = clean_html(ability_text)
     
     return ability_text
 
 
-############################### Children of get_ability ############################
-
-
-def clean_ability_string(ability):
-    
-    # replace icon html with matching word in all caps
-    icon_types = [
-                  'reaction',
-                  'wild', 
-                  'willpower', 
-                  'combat', 
-                  'agility', 
-                  'intellect', 
-                  'wild',
-                  'curse', 
-                  'bless',
-                  'rogue',
-                  'survivor',
-                  'seeker',
-                  'guardian',
-                  'mystic',
-                  'neutral',
-                  'skull',
-                  'tablet',
-                  'cultist',
-                  'elder sign']
-    
-    for icon in icon_types:
-    
-        ability = ability.replace(f'<span class="icon-{icon}" title="{icon.capitalize()}"></span>', 
-                                  f'{icon.upper()}')
-        
-        ability = ability.replace(f'<div class="card-text border-{icon}">\n<p>', '')
-
-    ability = ability.replace(f'<span class="icon-wild" title="Any Skill"></span>', 'WILD')
-
-    ability = ability.replace(f'<span class="icon-elder_sign" title="Elder Sign"></span>', 'ELDER_SIGN')
-
-    ability = ability.replace(f'<span class="icon-elder_sign" title="Elder Thing"></span>', 'ELDER_THING')
-
-    # delete extraneous html
-    dirt = [
-            '</p>\n</div>',
-            '</p>',
-            '<p>',
-            '<b>',
-            '</b>',
-            '<br/',
-            '<1>',
-            '<i>',
-            '</i>',
-            '><span>',]
-    
-    for item in dirt:
-        
-        ability = ability.replace(item,'')
-
-    return ability
