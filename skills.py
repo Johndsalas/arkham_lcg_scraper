@@ -6,6 +6,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import pandas as pd
+from helper import get_soup, get_text_for_icon, clean_html
 
 
 
@@ -16,7 +17,7 @@ def get_skills_df(skill_urls):
                                         '''
 
     # dictionary with empty traits
-    skill_traits = {'title':[],
+    skill_dict = {'title':[],
                     'XP':[],
                     'test_icons':[],
                     'traits':[],
@@ -25,7 +26,8 @@ def get_skills_df(skill_urls):
                     'type':[],
                     'flavor':[],
                     'artist':[],
-                    'expansion':[]}
+                    'expansion':[],
+                    'url':[]}
 
     print("Getting skill cards")
 
@@ -36,42 +38,28 @@ def get_skills_df(skill_urls):
         results = get_soup(url)
 
         # extract card elements
-        title, xp, test_icons, traits, faction, ability, tipe, flavor, artist, expansion = get_card_traits(results)
+        skill_list = get_skill_traits(results)
         
-        print(f'Getting Skill card {title}...')
+        skill_list.append(url)
 
-        # list of trait values
-        trait_list = [title, xp, test_icons, traits, faction, ability, tipe, flavor, artist, expansion]
+        print(f'Getting Skill card {skill_list[0]}...')
 
         # itterate through card elements and add each to a dictionary
-        for i, key in enumerate(skill_traits):
+        for i, key in enumerate(skill_dict):
 
-            skill_traits[key].append(trait_list[i])
+            skill_dict[key].append(skill_list[i])
 
     print("Making dataframe...")
 
     # convert dictionary to dataframe
-    df_skill = pd.DataFrame(skill_traits)
+    df_skill = pd.DataFrame(skill_dict)
 
     return df_skill
 
 ##########################################Get soup request#########################################################
-def get_soup(url):
-    '''Child of get_skills_df
-       Takes in a url for a card
-       Returns html request result parsed using beautiful soup'''
-
-    # create request and soup objects
-    html = requests.get(url)
-
-    soup = BeautifulSoup(html.content, 'html.parser')
-
-    # locate urls on page and return
-    return soup.find(id='list')
 
 
-
-def get_card_traits(results):
+def get_skill_traits(results):
     ''' Child of get_skills_df
         Takes in html request result
         Returns card traits for that request'''
@@ -97,7 +85,7 @@ def get_card_traits(results):
 
     expansion = results.find('div', class_='card-pack').text.replace('\n', '').replace('\t', '').replace('.', '')
 
-    return title, xp, test_icons, traits, faction, ability, tipe, flavor, artist, expansion
+    return [title, xp, test_icons, traits, faction, ability, tipe, flavor, artist, expansion]
 
 
 def get_xp(results):

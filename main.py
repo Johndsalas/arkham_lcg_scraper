@@ -10,7 +10,7 @@ import pandas as pd
 from invest import get_invest_df
 #from assets import get_assets_df
 #from events import get_events_df
-#from skills import get_skills_df
+from skills import get_skills_df
 
 ############################################ Run script #########################################
 
@@ -23,15 +23,15 @@ def main():
     invest, assets, events, skills = get_urls_by_type()
 
     # get dataframe of each card type
-    invest_df = get_invest_df(invest)
+    # invest_df = get_invest_df(invest)
     # assets_df = get_assets_df(assets)
     # events_df = get_events_df(events)
-    #skills_df = get_skills_df(skills)
+    skills_df = get_skills_df(skills)
 
     print("Writing to CSV...")
     # get csv of each card type  
-    invest_df.to_csv("investigators.csv")
-    #skills_df.to_csv("skills.csv")
+    # invest_df.to_csv("investigators.csv")
+    skills_df.to_csv("skills.csv")
 
     print("Process Complete!")
 

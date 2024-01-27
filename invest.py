@@ -10,7 +10,7 @@ from helper import get_soup, get_text_for_icon, clean_html
 
 def get_invest_df(invest):
 
-    investigator_traits = { 'title':[],
+    investigator_dict = { 'title':[],
                             'faction':[],
                             'type':[],
                             'traits':[],                      
@@ -21,13 +21,22 @@ def get_invest_df(invest):
                             'health':[],
                             'sanity':[],                     
                             'ability':[],
+                            'elder_sign_ability':[],
                             'artist':[],
                             'expansion':[],
                             'flavor':[],
                             'deck_size':[],
-                            'deck_options':[],
-                            'must_include':[],
-                            'setup':[]}
+                            'class_choices':[],
+                            'secondary_class_selection':[],
+                            'deckbuilding_options':[],
+                            'deckbuilding_requirements':[],
+                            'additional_requirements':[],
+                            'additional_restrictions':[],
+                            'additional_setup':[],
+                            'trait_choice':[],
+                            'bonus experience':[],
+                            'additional_upgrade_options':[],
+                            'url':[]}
 
     # for each url get player card info from that page and add each element to skill_traits
     for url in invest:
@@ -38,22 +47,24 @@ def get_invest_df(invest):
         # get list of card elements card elements
         trait_list = get_invest_traits(results)
 
+        trait_list.append(url)
+
         print(f'Getting investigator card {trait_list[0]}...')
 
         # itterate through card element titles and add each to a dictionary
-        for i, key in enumerate(investigator_traits):
+        for i, key in enumerate(investigator_dict):
 
-            investigator_traits[key].append(trait_list[i])
+            investigator_dict[key].append(trait_list[i])
 
     print("Making dataframe...")
 
-    return pd.DataFrame(investigator_traits)
+    return pd.DataFrame(investigator_dict)
 
 def get_invest_traits(results):
     '''Scrapes website for investigator card data
        Returns a list of those values'''
 
-    title = results.find('a', class_='card-name card-tip').text.replace('\n', '').replace('\t', '')
+    title = results.find('a', class_='card-name card-tip').text.replace('\n', '').replace('\t', '') + ': ' + results.find('div', class_='card-subname small').text.replace('\n', '').replace('\t', '')
 
     faction = results.find('span', class_='card-faction').text.replace('\n', '').replace('\t', '')
 
@@ -65,10 +76,8 @@ def get_invest_traits(results):
 
     health, sanity = get_stam_line(results)
    
-    ability = str(results.find('div', class_=f'card-text border-{faction.lower()}'))
-
-    ability = clean_html(get_text_for_icon(ability))
-
+    ability, star = get_ability_star(results, faction)
+    
     artist = results.find('div', class_='card-illustrator').text.replace('\n', '').replace('\t', '')
 
     expansion = results.find('div', class_='card-pack').text.replace('\n', '').replace('\t', '').replace('.', '') 
@@ -81,7 +90,7 @@ def get_invest_traits(results):
         
         flavor = ''
         
-    deck_size, deck_options, must_include, setup = get_deck_reqs(results, faction)
+    deck_size, class_choices, secondary_class_selection, deckbuilding_options, deckbuilding_requirements, additional_requirements, additional_restrictions, additional_setup, trait_choice, bonus_experience, additional_upgrade_options = get_deck_reqs(results, faction)
     
     return [title, 
             faction, 
@@ -93,14 +102,22 @@ def get_invest_traits(results):
             agility, 
             health, 
             sanity,
-            ability, 
+            ability,
+            star, 
             artist,
             expansion,
             flavor,
             deck_size,
-            deck_options,
-            must_include,
-            setup]
+            class_choices,
+            secondary_class_selection,
+            deckbuilding_options,
+            deckbuilding_requirements,
+            additional_requirements,
+            additional_restrictions,
+            additional_setup,
+            trait_choice,
+            bonus_experience,
+            additional_upgrade_options]
 
 
 def get_stat_line(results):
@@ -123,29 +140,58 @@ def get_stam_line(results):
     return stat_list[0], stat_list[1]
 
 
-def get_deck_reqs(results, faction):
+def get_ability_star(results, faction):
+    '''Scrapes websight for ability text and seperates into ability and star ability'''
 
-    deck = results.find_all('div', class_=f'card-text border-{faction.lower()}')[1].text
+    ability_star =  str(results.find('div', class_=f'card-text border-{faction.lower()}'))
 
-    pattern = r'(?:\b(?:Deck Size|Deckbuilding Options|Deckbuilding Requirements|Additional Setup):|\b\s*)([^:\n]+)'
+    ability_star = get_text_for_icon(ability_star)
 
-    deck_split = re.findall(pattern, str(deck))
+    ability_star = clean_html(ability_star)
 
-    deck_size = re.search('[0-9]{2}', deck_split[0]).group()
+    ability_star = re.search(r'([\s\S]+?)' + f'ELDER_SIGN effect:' + r'([\s\S]+)', ability_star)
 
-    deck_options = deck_split[1].replace('Deckbuilding Requirements (do not count toward deck size)', '').replace('(', '').replace(')', '').replace('  ', ' ')
+    ability = ability_star.group(1)
 
-    must_include = deck_split[2].replace('.Additional Setup', '')
+    star = ability_star.group(2)
+    
+    return ability, star
 
-    try:
+def get_deck_reqs(results,faction):
+    
+    deck_traits = results.find_all('div', class_=f'card-text border-{faction.lower()}')[1].text
 
-        setup = deck_split[3]
+    deck_traits = deck_traits.replace('Secondary Class Choice', 'Secondary Class Selection')
 
-    except:
+    cats = '''(Secondary Class Selection|Class Choices|Trait Choice|Deckbuilding Options|Deckbuilding Requirements|Additional Requirements|Additional Restrictions|Additional Setup|Bonus Experience|Secondary Class Choice|Additional Upgrade Options|\n)'''
 
-        setup = 'NONE'
+    cat_list = [ 'Deck Size',
+                 'Class Choices',
+                 'Secondary Class Selection',
+                 'Deckbuilding Options',
+                 'Deckbuilding Requirements',
+                 'Additional Requirements',
+                 'Additional Restrictions',
+                 'Additional Setup',
+                 'Trait Choice',
+                 'Bonus Experience',
+                 'Additional Upgrade Options']
 
-    return deck_size, deck_options, must_include, setup
+    values = []
+
+    for cat in cat_list:
+
+        try:
+
+            match = re.search(f'{cat}' + r'([\s\S]+?)' + f'{cats}', deck_traits).group(1)
+
+        except:
+
+            match = "NONE"
+
+        values.append(match)
+    
+    return values
 
 
 
