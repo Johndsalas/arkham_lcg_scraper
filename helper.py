@@ -16,7 +16,7 @@ def get_soup(url):
     soup = BeautifulSoup(html.content, 'html.parser')
 
     # locate urls on page and return
-    return soup.find(id='list')
+    return soup
 
 def get_text_for_icon(text):
 
