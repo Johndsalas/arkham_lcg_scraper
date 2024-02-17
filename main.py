@@ -7,10 +7,10 @@ import re
 from bs4 import BeautifulSoup
 import pandas as pd
 
-from invest import get_invest_df
+#from invest import get_invest_df
 #from assets import get_assets_df
-#from events import get_events_df
-from skills import get_skills_df
+from events import get_events_df
+#from skills import get_skills_df
 
 ############################################ Run script #########################################
 
@@ -24,8 +24,8 @@ def main():
 
     # get dataframe of each card type
     invest_df = get_invest_df(invest)
-    # assets_df = get_assets_df(assets)
-    # events_df = get_events_df(events)
+    assets_df = get_assets_df(assets)
+    events_df = get_events_df(events)
     skills_df = get_skills_df(skills)
 
     print("Writing to CSV...")
@@ -63,23 +63,42 @@ def get_cata_url(catagory):
         Takes in a string containing a player card faction, Scrapes arkhamdb, and
         Returns a list of urls for containing information on each card of that catagory'''
 
-    # get url for page to scrape
-    url = f'https://arkhamdb.com/find?q=t%3A{catagory}&decks=player'
+    full_results = []
 
-    # create request and soup objects
-    html = requests.get(url)
+    if catagory in ('investigator', 'skill'):
+        
+        pages = 1
+        
+    elif catagory == 'event':
+        
+        pages = 2
+        
+    elif catagory == 'asset':
+        
+        pages = 4
 
-    soup = BeautifulSoup(html.content, 'html.parser')
+    for page in range(1,pages+1):
 
-    # locate urls on page
-    results = soup.find(id='list')
+        
+        print(page)
+        url = f'https://arkhamdb.com/find?q=t%3A{catagory}&view=list&sort=name&decks=player&page={page}'
 
-    results = results.find_all('a', class_='card-tip')
+        # create request and soup objects
+        html = requests.get(url)
 
-    # convert urls to string and make a list
-    results = [str(result['href']) for result in results]
+        soup = BeautifulSoup(html.content, 'html.parser')
 
-    return results
+        # locate urls on page
+        results = soup.find(id='list')
+
+        results = results.find_all('a', class_='card-tip')
+
+        # convert urls to string and make a list
+        results = [str(result['href']) for result in results]
+                
+        full_results.extend(results)
+                
+    return full_results
 
 if __name__ == "__main__":
 
