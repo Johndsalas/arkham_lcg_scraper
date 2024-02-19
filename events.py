@@ -6,11 +6,11 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import pandas as pd
-from helper import get_soup, get_text_for_icon, clean_html
+from helper import get_soup, get_text_for_icon, clean_html, get_cost_xp, get_subtitle, get_traits
 
 
 
-def get_skills_df(skill_urls):
+def get_events_df(skill_urls):
     ''' 
         Takes in urls for skill cards and 
         Returns a df of the card info
@@ -29,7 +29,7 @@ def get_skills_df(skill_urls):
                     'expansion':[],
                     'url':[]}
 
-    print("Getting skill cards")
+    print("Getting event cards")
 
     # for each url get player card info from that page and add each element to skill_traits
     for url in skill_urls:
@@ -38,11 +38,11 @@ def get_skills_df(skill_urls):
         results = get_soup(url)
 
         # extract card elements
-        skill_list = get_skill_traits(results)
+        skill_list = get_event_traits(results)
         
         skill_list.append(url)
 
-        print(f'Getting Skill card {skill_list[0]}...')
+        print(f'Getting event card {skill_list[0]}...')
 
         # itterate through card elements and add each to a dictionary
         for i, key in enumerate(skill_dict):
@@ -94,28 +94,7 @@ def get_event_traits(results):
              ability,
              artist,
              expansion,
-             flavor,
-             url]
-
-
-def get_xp(results):
-    ''' Child of get_card_traits
-        Takes in an BS object containing card information
-        Returns XP cost of card if it exists
-        Otherwise returns 0'''
-    
-    # locate xp info in object
-    xp = results.find('div', class_='card-props')
-    
-    # if there is no value return 0
-    if xp == None:
-        
-        return 0
-    
-    # otherwise return perform minor cleaning on value and return
-    else:
-        
-        return re.search('[0-9]', str(xp)).group()
+             flavor]
 
 
 def get_icons(results):

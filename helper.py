@@ -82,3 +82,53 @@ def clean_html(text):
         text = text.replace(item,'')
 
     return text
+
+
+def get_subtitle(results):
+    
+    try:
+        
+        sub_title = results.find('div', class_='card-subname small').text.replace('\n', '').replace('\t', '')
+        
+    except:
+        
+        sub_title = ''
+        
+    return sub_title
+
+
+
+def get_traits(results):
+    
+    try:
+        
+        traits = results.find('p', class_='card-traits').text.replace('\n', '').replace('\t', '')
+        
+    except:
+        
+        traits = ''
+        
+    return traits
+
+
+def get_cost_xp(results):
+    
+    cost_xp = str(results.find('div', class_='card-props'))
+
+    try:
+    
+        cost = re.search(r'Cost:\s+(\d+)', cost_xp).group(1)
+        
+    except:
+        
+        cost = 0
+
+    try:
+    
+        xp = re.search(r'XP:\s+(\d+)', cost_xp).group(1)
+        
+    except:
+        
+        xp = 0
+    
+    return cost, xp
