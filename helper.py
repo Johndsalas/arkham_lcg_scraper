@@ -132,3 +132,19 @@ def get_cost_xp(results):
         xp = 0
     
     return cost, xp
+
+
+def get_ability(results, faction):
+    '''Child of get_card_traits
+        Takes in request results for an arkhamdb page containing player card data
+        Returns a string represintation of skill test icons on the card'''
+    
+    # gets html object and convert to string
+    ability_string = str(results.find('div', class_=f'card-text border-{faction.lower()}'))
+    
+    # convert html to string, replace icons in text with string represintations
+    ability_text = get_text_for_icon(ability_string)
+
+    ability_text = clean_html(ability_text)
+    
+    return ability_text

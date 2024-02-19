@@ -1,14 +1,10 @@
-''' Contains code for scraping info for skill cards'''
-
-# Imports
+''' Contains code for scraping asset cards'''
 
 import requests
 import re
 from bs4 import BeautifulSoup
 import pandas as pd
 from helper import get_soup, get_text_for_icon, clean_html, get_cost_xp, get_subtitle, get_traits, get_ability
-
-
 
 def get_events_df(event_urls):
     ''' 
@@ -62,8 +58,8 @@ def get_events_df(event_urls):
 ##########################################Get soup request#########################################################
 
 
-def get_event_traits(results):
-
+def get_asset_traits(results):
+    
     title = results.find('a', class_='card-name card-tip').text.replace('\n', '').replace('\t', '')
 
     sub_title = get_subtitle(results)
@@ -80,6 +76,8 @@ def get_event_traits(results):
 
     ability = get_ability(results, faction)
 
+    health, sanity = get_asset_stam_line(results)
+
     artist = results.find('div', class_='card-illustrator').text.replace('\n', '').replace('\t', '')
 
     flavor = results.find('div', class_='card-flavor small').text.replace('\n', '').replace('\t', '')
@@ -95,6 +93,8 @@ def get_event_traits(results):
              xp,
              icons,
              ability,
+             health,
+             sanity,
              artist,
              expansion,
              flavor]
@@ -124,4 +124,17 @@ def get_icons(results):
     return icons.upper()[:-1]
 
 
+def get_ability(results, faction):
+    '''Child of get_card_traits
+        Takes in request results for an arkhamdb page containing player card data
+        Returns a string represintation of skill test icons on the card'''
+    
+    # gets html object and convert to string
+    ability_string = str(results.find('div', class_=f'card-text border-{faction.lower()}'))
+    
+    # convert html to string, replace icons in text with string represintations
+    ability_text = get_text_for_icon(ability_string)
 
+    ability_text = clean_html(ability_text)
+    
+    return ability_text

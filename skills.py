@@ -6,7 +6,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import pandas as pd
-from helper import get_soup, get_text_for_icon, clean_html
+from helper import get_soup, get_text_for_icon, clean_html, get_ability
 
 
 
