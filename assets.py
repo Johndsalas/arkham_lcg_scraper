@@ -6,14 +6,14 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from helper import get_soup, get_text_for_icon, clean_html, get_cost_xp, get_subtitle, get_traits, get_ability
 
-def get_events_df(event_urls):
+def get_assets_df(asset_urls):
     ''' 
         Takes in urls for event cards and 
         Returns a df of the card info
                                         '''
 
     # dictionary with empty traits
-    event_dict = {'title':[],
+    asset_dict = {'title':[],
                   'sub_title':[],
                   'faction':[],
                   'type':[],
@@ -22,38 +22,40 @@ def get_events_df(event_urls):
                   'XP':[],
                   'test_icons':[],
                   'ability':[],
-                  'artist':[], 
+                  'health':[],
+                  'sanity':[], 
+                  'artist':[],
                   'expansion':[],
                   'flavor':[],
                   'url':[]}
 
 
-    print("Getting event cards")
+    print("Getting asset cards...")
 
     # for each url get player card info from that page and add each element to event_traits
-    for url in event_urls:
+    for url in asset_urls:
 
         # make html request to arkham db and parse using BS
         results = get_soup(url)
 
         # extract card elements
-        event_list = get_event_traits(results)
+        asset_list = get_asset_traits(results)
         
-        event_list.append(url)
+        asset_list.append(url)
 
-        print(f'Getting event card {event_list[0]}...')
+        print(f'Getting event card {asset_list[0]}...')
 
         # itterate through card elements and add each to a dictionary
-        for i, key in enumerate(event_dict):
+        for i, key in enumerate(asset_dict):
 
-            event_dict[key].append(event_list[i])
+            asset_dict[key].append(asset_list[i])
 
     print("Making dataframe...")
 
     # convert dictionary to dataframe
-    df_event = pd.DataFrame(event_dict)
+    df_asset = pd.DataFrame(asset_dict)
 
-    return df_event
+    return df_asset
 
 ##########################################Get soup request#########################################################
 
@@ -138,3 +140,26 @@ def get_ability(results, faction):
     ability_text = clean_html(ability_text)
     
     return ability_text
+
+
+def get_asset_stam_line(results):
+    
+    results = results.find('div').text.replace('\n', '').replace('\t', '') 
+    
+    try:
+    
+        health = re.search(r'Health:\s+(\d+)', results).group(1)
+
+    except:
+
+        health = "--"
+    
+    try:
+
+        sanity = re.search(r'Sanity:\s+(\d+)', results).group(1)
+        
+    except:
+
+        sanity = "--"
+
+    return health, sanity
