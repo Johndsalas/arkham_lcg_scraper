@@ -38,6 +38,8 @@ def get_invest_df(invest):
                             'additional_upgrade_options':[],
                             'url':[]}
 
+    print("Getting investigator cards...")
+
     # for each url get player card info from that page and add each element to skill_traits
     for url in invest:
 

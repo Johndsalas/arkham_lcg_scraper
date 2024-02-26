@@ -29,7 +29,7 @@ def get_skills_df(skill_urls):
                     'expansion':[],
                     'url':[]}
 
-    print("Getting skill cards")
+    print("Getting skill cards...")
 
     # for each url get player card info from that page and add each element to skill_traits
     for url in skill_urls:

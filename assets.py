@@ -27,7 +27,20 @@ def get_assets_df(asset_urls):
                   'artist':[],
                   'expansion':[],
                   'flavor':[],
+                  'slot':[],
                   'url':[]}
+
+    one_hand = get_slot_url('https://arkhamdb.com/find?q=z%3Ahand&decks=player')
+
+    two_hand = get_slot_url('https://arkhamdb.com/find?q=z%3A%22hand+x2%22&decks=player')
+
+    accessory = get_slot_url('https://arkhamdb.com/find?q=z%3Aaccessory&decks=player')
+
+    ally = get_slot_url('https://arkhamdb.com/find?q=z%3Aally&decks=player')
+
+    one_arcane = get_slot_url('https://arkhamdb.com/find?q=z%3Aarcane&decks=player')
+
+    two_arcane = ['https://arkhamdb.com/card/06328']
 
 
     print("Getting asset cards...")
@@ -41,9 +54,11 @@ def get_assets_df(asset_urls):
         # extract card elements
         asset_list = get_asset_traits(results)
         
+        asset_list.append(get_item_slot(one_hand, two_hand, accessory, ally, one_arcane, two_arcane, url))
+        
         asset_list.append(url)
 
-        print(f'Getting event card {asset_list[0]}...')
+        print(f'Getting asset card {asset_list[0]}...')
 
         # itterate through card elements and add each to a dictionary
         for i, key in enumerate(asset_dict):
@@ -163,3 +178,51 @@ def get_asset_stam_line(results):
         sanity = "--"
 
     return health, sanity
+
+
+def get_item_slot(one_hand, two_hand, accessory, ally, one_arcane, two_arcane, url):
+
+    if url in one_hand:
+    
+        return 'One Handed'
+    
+    elif url in two_hand:
+        
+        return 'Two Handed'
+        
+    elif url in accessory:
+
+        return 'Accessory'
+        
+    elif url in ally:
+        
+        return 'Ally'
+        
+    elif url in one_arcane:
+        
+        return 'One Arcane'
+        
+    elif url in two_arcane:
+        
+        return 'Two Arcane'
+    
+    else:
+
+        return '--'
+    
+
+def get_slot_url(scrape_url):
+
+    html = requests.get(scrape_url)
+
+    soup = BeautifulSoup(html.content, 'html.parser')
+
+    # locate urls on page
+    results = soup.find(id='list')
+
+    results = results.find_all('a', class_='card-tip')
+
+    # convert urls to string and make a list
+    urls = [str(result['href']) for result in results]
+
+    return urls

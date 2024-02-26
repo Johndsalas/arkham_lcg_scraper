@@ -75,7 +75,14 @@ def clean_html(text):
             '<1>',
             '<i>',
             '</i>',
-            '><span>']
+            '><span>',
+            '</div>',
+            '<div class="card-text border-neutral>',
+            '<div class="card-text border-survivor>',
+            '<div class="card-text border-guardian>',
+            '<div class="card-text border-mystic>',
+            '<div class="card-text border-rouge>',
+            '<div class="card-text border-seeker>']
     
     for item in dirt:
         

@@ -32,7 +32,7 @@ def get_events_df(event_urls):
                   'url':[]}
 
 
-    print("Getting event cards")
+    print("Getting event cards...")
 
     # for each url get player card info from that page and add each element to event_traits
     for url in event_urls:
