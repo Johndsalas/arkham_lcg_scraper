@@ -6,7 +6,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import pandas as pd
-from helper import get_soup, get_text_for_icon, clean_html, get_ability
+from helper import get_soup, get_text_for_icon, clean_html, get_ability, get_clean_text
 
 
 
@@ -65,19 +65,19 @@ def get_skill_traits(results):
         Returns card traits for that request'''
 
     # extract card elements, convert them to text, and do some initial cleaning
-    title = results.find('a', class_='card-name card-tip').text.replace('\n', '').replace('\t', '')
+    title = results.find('a', class_='card-name card-tip').text.replace('\n', '').replace('\t', '').replace('"','')
     
     xp =  get_xp(results)
 
     test_icons = get_icons(results)
 
-    traits = results.find('p', class_='card-traits').text.replace('\n', '').replace('\t', '')
+    traits = get_clean_text(results.find('p', class_='card-traits').text.replace('\n', '').replace('\t', ''))
 
     faction = results.find('span', class_='card-faction').text.replace('\n', '').replace('\t', '')
 
     ability = get_ability(results, faction)
 
-    tipe = results.find('span', class_='card-type').text.replace('\n', '').replace('\t', '')
+    tipe = get_clean_text(results.find('span', class_='card-type').text.replace('\n', '').replace('\t', ''))
 
     flavor = results.find('div', class_='card-flavor small').text.replace('\n', '').replace('\t', '')
 

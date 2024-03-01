@@ -155,3 +155,18 @@ def get_ability(results, faction):
     ability_text = clean_html(ability_text)
     
     return ability_text
+
+
+def get_clean_text(text):
+
+    dirt = ['.',
+            ':',
+            '()',
+            '(, , , , or )',
+            '(, , , , and )']
+
+    for item in dirt:
+
+        text = text.replace(item, '')
+
+    return text

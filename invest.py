@@ -6,7 +6,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import pandas as pd
-from helper import get_soup, get_text_for_icon, clean_html
+from helper import get_soup, get_text_for_icon, clean_html, get_clean_text
 
 def get_invest_df(invest):
 
@@ -185,7 +185,7 @@ def get_deck_reqs(results,faction):
 
         try:
 
-            match = re.search(f'{cat}' + r'([\s\S]+?)' + f'{cats}', deck_traits).group(1)
+            match = get_clean_text(re.search(f'{cat}' + r'([\s\S]+?)' + f'{cats}', deck_traits).group(1))
 
         except:
 

@@ -6,7 +6,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import pandas as pd
-from helper import get_soup, get_text_for_icon, clean_html, get_cost_xp, get_subtitle, get_traits, get_ability
+from helper import get_soup, get_text_for_icon, clean_html, get_cost_xp, get_subtitle, get_traits, get_ability, get_clean_text
 
 
 
@@ -64,7 +64,7 @@ def get_events_df(event_urls):
 
 def get_event_traits(results):
 
-    title = results.find('a', class_='card-name card-tip').text.replace('\n', '').replace('\t', '')
+    title = results.find('a', class_='card-name card-tip').text.replace('\n', '').replace('\t', '').replace('"','')
 
     sub_title = get_subtitle(results)
 
@@ -72,7 +72,7 @@ def get_event_traits(results):
 
     tipe = results.find('span', class_='card-type').text.replace('\n', '').replace('\t', '')
 
-    traits = get_traits(results)
+    traits = get_clean_text(get_traits(results))
 
     cost, xp = get_cost_xp(results)
 
