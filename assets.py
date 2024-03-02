@@ -4,13 +4,11 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import pandas as pd
-from helper import get_soup, get_text_for_icon, clean_html, get_cost_xp, get_subtitle, get_traits, get_ability, get_clean_text
+from helper import get_soup, get_clean_text, get_cost_xp, get_subtitle, get_traits, get_ability, get_icons
 
 def get_assets_df(asset_urls):
-    ''' 
-        Takes in urls for event cards and 
-        Returns a df of the card info
-                                        '''
+    ''' Takes in urls for asset cards and 
+        Returns a df containing each cards information'''
 
     # dictionary with empty traits
     asset_dict = {'title':[],
@@ -30,6 +28,7 @@ def get_assets_df(asset_urls):
                   'slot':[],
                   'url':[]}
 
+    # gathers list of URL's belonging to each 'slot' catagory (information is otherwise unavailable)
     one_hand = get_slot_url('https://arkhamdb.com/find?q=z%3Ahand&decks=player')
 
     two_hand = get_slot_url('https://arkhamdb.com/find?q=z%3A%22hand+x2%22&decks=player')
@@ -41,7 +40,6 @@ def get_assets_df(asset_urls):
     one_arcane = get_slot_url('https://arkhamdb.com/find?q=z%3Aarcane&decks=player')
 
     two_arcane = ['https://arkhamdb.com/card/06328']
-
 
     print("Getting asset cards...")
 
@@ -72,11 +70,12 @@ def get_assets_df(asset_urls):
 
     return df_asset
 
-##########################################Get soup request#########################################################
-
 
 def get_asset_traits(results):
+    '''Takes in result of html request for an asset card
+       Returns list of parsed results containing the card's information'''
     
+    # search html request for desiered values
     title = results.find('a', class_='card-name card-tip').text.replace('\n', '').replace('\t', '').replace('"','')
 
     sub_title = get_subtitle(results)
@@ -117,48 +116,11 @@ def get_asset_traits(results):
              flavor]
 
 
-def get_icons(results):
-    '''Child of get_card_traits
-       Takes in request results for an arkhamdb page containing player card data
-       Returns a string represintation of skill test icons on the card'''
-      
-    icons = ''
-
-    # list containing each icon type
-    icon_types = ['wild', 'willpower', 'combat', 'agility', 'intellect']
-
-    # itterate through icon types
-    for stat in icon_types:
-
-        # get number of that icon on card from request results
-        num_icons = len(results.find_all('span', class_=f'icon icon-{stat} color-{stat}'))
-
-        # add that icon name to a string for each time it appears in request results
-        for icon in range(num_icons):
-
-            icons += f'{stat} '
-            
-    return icons.upper()[:-1]
-
-
-def get_ability(results, faction):
-    '''Child of get_card_traits
-        Takes in request results for an arkhamdb page containing player card data
-        Returns a string represintation of skill test icons on the card'''
-    
-    # gets html object and convert to string
-    ability_string = str(results.find('div', class_=f'card-text border-{faction.lower()}'))
-    
-    # convert html to string, replace icons in text with string represintations
-    ability_text = get_text_for_icon(ability_string)
-
-    ability_text = clean_html(ability_text)
-    
-    return ability_text
-
-
 def get_asset_stam_line(results):
+    '''Takes in request results for an arkhamdb page containing player card data
+        Returns two strings containing health and sanity values for that card'''
     
+    # look for and return health and sanity values if not found return '--'
     results = results.find('div').text.replace('\n', '').replace('\t', '') 
     
     try:
@@ -180,8 +142,31 @@ def get_asset_stam_line(results):
     return health, sanity
 
 
-def get_item_slot(one_hand, two_hand, accessory, ally, one_arcane, two_arcane, url):
+def get_slot_url(scrape_url):
+    '''Takes in a url to a page of search results containing cards of one slot type
+       Returns list of urls from that page'''
+    
+    # make request
+    html = requests.get(scrape_url)
 
+    soup = BeautifulSoup(html.content, 'html.parser')
+
+    # locate urls on page
+    results = soup.find(id='list')
+
+    results = results.find_all('a', class_='card-tip')
+
+    # convert urls to string and make a list
+    urls = [str(result['href']) for result in results]
+
+    return urls
+
+
+def get_item_slot(one_hand, two_hand, accessory, ally, one_arcane, two_arcane, url):
+    '''Takes in a list of url's and one url to be checked 
+       Returns a string containing the slot value of the coresponding card '''
+
+    # check lists for url and return the corresponding slot if not founf return '--'
     if url in one_hand:
     
         return 'One Handed'
@@ -209,20 +194,3 @@ def get_item_slot(one_hand, two_hand, accessory, ally, one_arcane, two_arcane, u
     else:
 
         return '--'
-    
-
-def get_slot_url(scrape_url):
-
-    html = requests.get(scrape_url)
-
-    soup = BeautifulSoup(html.content, 'html.parser')
-
-    # locate urls on page
-    results = soup.find(id='list')
-
-    results = results.find_all('a', class_='card-tip')
-
-    # convert urls to string and make a list
-    urls = [str(result['href']) for result in results]
-
-    return urls

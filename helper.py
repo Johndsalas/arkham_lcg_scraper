@@ -3,7 +3,6 @@
 import requests
 import re
 from bs4 import BeautifulSoup
-import pandas as pd
 
 
 def get_soup(url):
@@ -19,7 +18,10 @@ def get_soup(url):
     return soup
 
 def get_text_for_icon(text):
-
+    '''Takes in request response as a string
+       replaces html code indicating a game icon with a text representation
+       Returns sting with replacements'''
+    
     # replace icon html with matching word in all caps
     icon_types = [
                   'action',
@@ -63,8 +65,11 @@ def get_text_for_icon(text):
     return text
 
 def clean_html(text):
-
-    # delete extraneous html
+    '''Takes in request response as a string
+       Removes common unwanted html patters from string
+       Returns string with patterns removed'''
+    
+    # remove each item in dirt from text
     dirt = [
             '</p>\n</div>',
             '</p>',
@@ -92,6 +97,8 @@ def clean_html(text):
 
 
 def get_subtitle(results):
+    '''Takes in request response as a string
+       Returns subtitle as string or '--' if not found'''
     
     try:
         
@@ -99,13 +106,15 @@ def get_subtitle(results):
         
     except:
         
-        sub_title = ''
+        sub_title = '--'
         
     return sub_title
 
 
 
 def get_traits(results):
+    '''Takes in request response as a string
+       Returns traits value as string or '--' if not found'''
     
     try:
         
@@ -113,13 +122,15 @@ def get_traits(results):
         
     except:
         
-        traits = ''
+        traits = '--'
         
     return traits
 
 
 def get_cost_xp(results):
-    
+    '''Takes in request response as a string
+       Returns cost and XP values as string or '--' if not found'''
+
     cost_xp = str(results.find('div', class_='card-props'))
 
     try:
@@ -142,9 +153,8 @@ def get_cost_xp(results):
 
 
 def get_ability(results, faction):
-    '''Child of get_card_traits
-        Takes in request results for an arkhamdb page containing player card data
-        Returns a string represintation of skill test icons on the card'''
+    '''Takes in request results for an arkhamdb page containing player card data
+        Returns a string containing ability text for that card'''
     
     # gets html object and convert to string
     ability_string = str(results.find('div', class_=f'card-text border-{faction.lower()}'))
@@ -158,6 +168,9 @@ def get_ability(results, faction):
 
 
 def get_clean_text(text):
+    '''Takes in request response as a string
+       Removes common unwanted text patters from string
+       Returns string with patterns removed'''
 
     dirt = ['.',
             ':',
@@ -170,3 +183,26 @@ def get_clean_text(text):
         text = text.replace(item, '')
 
     return text
+
+
+def get_icons(results):
+    '''Takes in request results for an arkhamdb page containing player card data
+        Returns a string represintation of test icons on the card'''
+      
+    icons = ''
+
+    # list containing each icon type
+    icon_types = ['wild', 'willpower', 'combat', 'agility', 'intellect']
+
+    # itterate through icon types
+    for stat in icon_types:
+
+        # get number of that icon on card from request results
+        num_icons = len(results.find_all('span', class_=f'icon icon-{stat} color-{stat}'))
+
+        # add that icon name to a string for each time it appears in request results
+        for icon in range(num_icons):
+
+            icons += f'{stat} '
+            
+    return icons.upper()[:-1]

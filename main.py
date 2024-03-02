@@ -1,23 +1,19 @@
-'''Script for scraping player card info from Arkhamdb websight'''
+'''Main script for scraping player card info from Arkhamdb website'''
 
 # Imports
-
 import requests
-import re
 from bs4 import BeautifulSoup
-import pandas as pd
 
 from invest import get_invest_df
 from assets import get_assets_df
 from events import get_events_df
 from skills import get_skills_df
 
-############################################ Run script #########################################
 
 def main():
-    '''Scrapes Arkhamdb websight 
-       Returns a dataframe containing player card information for each card type
-       Investigators, Assets, Events, and Skills'''
+    '''Scrapes Arkhamdb  
+       Returns a dataframe containing player card information 
+       by card type'''
 
     # get URL's by faction
     invest, assets, events, skills = get_urls_by_type()
@@ -40,13 +36,11 @@ def main():
     print("Process Complete!")
 
 
-################################# Get URL's by card type ####################################
-
 def get_urls_by_type():
-    '''Child of main
-       Scrapes arkhamdb and returns a list of urls pages containing card information
+    '''Scrapes arkhamdb and returns a list of urls pages containing card information
        on each card for each card type'''
 
+    # call function to return list of url's by catagory
     print("Getting investigator URL's...")
     invest = get_cata_url('investigator')
 
@@ -63,12 +57,12 @@ def get_urls_by_type():
 
 
 def get_cata_url(catagory):
-    ''' Child of get_urls_by_type
-        Takes in a string containing a player card faction, Scrapes arkhamdb, and
+    ''' Takes in a string containing a player card faction, Scrapes arkhamdb, and
         Returns a list of urls for containing information on each card of that catagory'''
 
     full_results = []
 
+    # defines number of results pages to scrape
     if catagory in ('investigator', 'skill'):
         
         pages = 1
@@ -81,6 +75,7 @@ def get_cata_url(catagory):
         
         pages = 4
 
+    # itterates through pages in catagory
     for page in range(1,pages+1):
 
         url = f'https://arkhamdb.com/find?q=t%3A{catagory}&view=list&sort=name&decks=player&page={page}'
@@ -102,7 +97,7 @@ def get_cata_url(catagory):
                 
     return full_results
 
+
 if __name__ == "__main__":
 
     main()
-

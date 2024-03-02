@@ -1,20 +1,14 @@
 ''' Contains code for scraping info for skill cards'''
 
 # Imports
-
-import requests
 import re
-from bs4 import BeautifulSoup
 import pandas as pd
-from helper import get_soup, get_text_for_icon, clean_html, get_ability, get_clean_text
-
+from helper import get_soup, get_text_for_icon, clean_html, get_ability, get_clean_text, get_icons
 
 
 def get_skills_df(skill_urls):
-    ''' 
-        Takes in urls for skill cards and 
-        Returns a df of the card info
-                                        '''
+    '''Takes in urls for skills cards and 
+       Returns a df containing each cards information'''
 
     # dictionary with empty traits
     skill_dict = {'title':[],
@@ -56,15 +50,12 @@ def get_skills_df(skill_urls):
 
     return df_skill
 
-##########################################Get soup request#########################################################
-
 
 def get_skill_traits(results):
-    ''' Child of get_skills_df
-        Takes in html request result
-        Returns card traits for that request'''
+    '''Takes in result of html request for an skills card
+       Returns list of parsed results containing the card's information'''
 
-    # extract card elements, convert them to text, and do some initial cleaning
+    # search request result for desiered values
     title = results.find('a', class_='card-name card-tip').text.replace('\n', '').replace('\t', '').replace('"','')
     
     xp =  get_xp(results)
@@ -80,7 +71,6 @@ def get_skill_traits(results):
     tipe = get_clean_text(results.find('span', class_='card-type').text.replace('\n', '').replace('\t', ''))
 
     flavor = results.find('div', class_='card-flavor small').text.replace('\n', '').replace('\t', '')
-
     artist = results.find('div', class_='card-illustrator').text.replace('\n', '').replace('\t', '')
 
     expansion = results.find('div', class_='card-pack').text.replace('\n', '').replace('\t', '').replace('.', '')
@@ -89,47 +79,19 @@ def get_skill_traits(results):
 
 
 def get_xp(results):
-    ''' Child of get_card_traits
-        Takes in an BS object containing card information
-        Returns XP cost of card if it exists
-        Otherwise returns 0'''
+    '''Takes in result of html request for an skills card
+       Returns XP value of that card'''
     
-    # locate xp info in object
+    # search request result for xp value an return that value or 0 if value ids not found
     xp = results.find('div', class_='card-props')
     
-    # if there is no value return 0
     if xp == None:
         
         return 0
     
-    # otherwise return perform minor cleaning on value and return
     else:
         
         return re.search('[0-9]', str(xp)).group()
-
-
-def get_icons(results):
-    '''Child of get_card_traits
-       Takes in request results for an arkhamdb page containing player card data
-       Returns a string represintation of skill test icons on the card'''
-      
-    icons = ''
-
-    # list containing each icon type
-    icon_types = ['wild', 'willpower', 'combat', 'agility', 'intellect']
-
-    # itterate through icon types
-    for stat in icon_types:
-
-        # get number of that icon on card from request results
-        num_icons = len(results.find_all('span', class_=f'icon icon-{stat} color-{stat}'))
-
-        # add that icon name to a string for each time it appears in request results
-        for icon in range(num_icons):
-
-            icons += f'{stat} '
-            
-    return icons.upper()[:-1]
 
 
 def get_ability(results, faction):
