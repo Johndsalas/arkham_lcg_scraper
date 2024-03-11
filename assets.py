@@ -80,7 +80,7 @@ def get_asset_traits(results):
 
     sub_title = get_subtitle(results)
 
-    faction = results.find('span', class_='card-faction').text.replace('\n', '').replace('\t', '')
+    faction = results.find_all('span', class_='card-faction').text.replace('\n', '').replace('\t', '')
 
     tipe = get_clean_text(results.find('span', class_='card-type').text.replace('\n', '').replace('\t', ''))
 

@@ -23,15 +23,13 @@ def main():
     skills_df = get_skills_df(skills)
     events_df = get_events_df(events)
     assets_df = get_assets_df(assets)
-    
-   
 
     print('Writing to CSV...')
     # get csv of each card type  
-    invest_df.to_csv('investigators.csv')
-    skills_df.to_csv('skills.csv')
-    events_df.to_csv('events.csv')
-    assets_df.to_csv('assets.csv')
+    invest_df.to_csv('investigators.csv',index = False)
+    skills_df.to_csv('skills.csv',index = False)
+    events_df.to_csv('events.csv',index = False)
+    assets_df.to_csv('assets.csv',index = False)
 
     print("Process Complete!")
 
