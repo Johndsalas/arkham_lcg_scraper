@@ -75,7 +75,16 @@ def get_skill_traits(results):
 
     expansion = results.find('div', class_='card-pack').text.replace('\n', '').replace('\t', '').replace('.', '')
 
-    return [title, xp, test_icons, traits, faction, ability, tipe, flavor, artist, expansion]
+    return [title, 
+            xp, 
+            test_icons, 
+            traits, 
+            faction, 
+            ability, 
+            tipe, 
+            flavor, 
+            artist, 
+            expansion]
 
 
 def get_xp(results):
