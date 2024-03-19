@@ -69,14 +69,61 @@ def get_cata_urls(catagory):
 
 def get_soup(url):
     '''Takes in a url as a string
+       Calls get_text_for_icon to replace html that generates card icons with text reperesintationss
        Returns html request result parsed using beautiful soup'''
 
     # create request and soup objects
     html = requests.get(url)
 
+    # locate urls on page and return
     soup = BeautifulSoup(html.content, 'html.parser')
 
-    # locate urls on page and return
+    return soup
+
+
+def get_text_for_icon(soup):
+    '''Takes in request response as a string
+       replaces html code indicating a game icon with a text representation
+       Returns sting with replacements'''
+    
+    # replace icon html with matching word in all caps
+    icon_types = ['action',
+                  'reaction',
+                  'wild', 
+                  'willpower', 
+                  'combat', 
+                  'agility', 
+                  'intellect', 
+                  'wild',
+                  'curse', 
+                  'bless',
+                  'rogue',
+                  'survivor',
+                  'seeker',
+                  'guardian',
+                  'mystic',
+                  'neutral',
+                  'skull',
+                  'tablet',
+                  'cultist',
+                  'elder sign']
+    
+    for icon in icon_types:
+    
+        soup = soup.replace(f'<span class="icon-{icon}" title="{icon.capitalize()}"></span>', f'{icon.upper()}')
+        
+        soup = soup.replace(f'<div class="card-text border-{icon}">\n<p>', '')
+
+    soup = soup.replace(f'<span class="icon-wild" title="Any Skill"></span>', 'WILD')
+
+    soup = soup.replace(f'<span class="icon-elder_sign" title="Elder Sign"></span>', 'ELDER_SIGN')
+
+    soup = soup.replace(f'<span class="icon-elder_thing" title="Elder Thing"></span>', 'ELDER_THING')
+
+    soup = soup.replace(f'<span class="icon-lightning" title="Fast Action"></span>', 'FAST_ACTION')
+
+    soup = soup.replace(f'<span class="icon-auto_fail" title="Auto Fail"></span>', 'TENTACLES')
+
     return soup
 
 ############################### Use URL to scrape card descriptors and creare a dataframe ##########################################################
@@ -105,6 +152,7 @@ def get_card_df(urls):
                  'expansion':[],
                  'flavor':[],
                  'deck_building':[],
+                 'story':[],
                  'url':[]}
 
     print("Getting card descriptors...")
@@ -140,37 +188,37 @@ def get_card_info(soup):
     # if element is not present in all cards use try except 
     # on except return -- for the value
 
-    title = get_title(soup).strip()
+    title = get_title(soup)
 
-    faction = get_faction(soup).strip()
+    faction = get_faction(soup)
     
     first_faction = faction.split(' ')[0] # for subsequent searches requiring faction
 
-    tipe = soup.find('p', class_='card-type').text.replace('.','').lower().strip()
+    tipe = soup.find('p', class_='card-type').text.replace('.','').replace().lower().strip()
     
     try:
     
-        traits = soup.find('p', class_='card-traits').text.strip()
+        traits = soup.find('p', class_='card-traits').text.replace('Silver Twilight','SilverTwilight').replace('hand x2','handx2').replace('.','').lower().strip()
     
     except:
         
         traits = '--'
         
-    ability = get_ability(soup, first_faction).strip()
+    ability = get_ability(soup, first_faction)
 
-    artist = soup.find('div', class_='card-illustrator').text.replace('\n', '').replace('\t', '').strip()
+    artist = soup.find('div', class_='card-illustrator').text.replace('\n', '').replace('\t', '')
 
-    expansion = soup.find('div', class_='card-pack').text.replace('\n', '').replace('\t', '').replace('.', '').strip()
+    expansion = soup.find('div', class_='card-pack').text.replace('\n', '').replace('\t', '')
 
-    flavor = get_flavor(soup).strip()
+    flavor = get_flavor(soup)
     
     # get sets of descriptors not common to all card types set misssing values to "--"
     
     if tipe.split(' ')[0] in ('asset','event','skill'):
     
-        icons = get_icons(soup).strip()
+        icons = get_icons(soup)
     
-        xp = get_xp(soup).strip()
+        xp = get_xp(soup)
         
     else:
         
@@ -180,27 +228,13 @@ def get_card_info(soup):
         
     if tipe.split(' ')[0] in ('asset','investigator'):
         
-        try:
-        
-            health = re.search('Health:\s+(\d)', str(soup.find('div'))).group(1).strip()
-            
-        except:
-            
-            health = '--'
-
-        try:
-            
-            sanity = re.search('Sanity:\s+(\d)', str(soup.find('div'))).group(1).strip()
-            
-        except:
-            
-            sanity = '--'
+        health, sanity = get_health_sanity(soup)
         
     else:
         
         health = '--'
         
-        sanaty = '--'
+        sanity = '--'
             
     if tipe.split(' ')[0] in ('asset','event'):
         
@@ -221,11 +255,9 @@ def get_card_info(soup):
 
         agility = soup.find('li', title='Agility').text.strip()
 
-        health = re.search('Health:\s+(\d)', str(soup.find('div'))).group(1).strip()
+        deck_building = get_text_for_icon(soup.find_all('div', class_=f'card-text border-{first_faction}')[1].text.replace('\n', '').replace('()','').replace('(, , , , or )', ''))
 
-        sanity = re.search('Sanity:\s+(\d)', str(soup.find('div'))).group(1).strip()
-
-        deck_building = soup.find('div', class_=f'card-text border-{first_faction}').text.replace('\n', '').strip()
+        story = get_story(soup)
         
     else:
         
@@ -236,7 +268,8 @@ def get_card_info(soup):
         health = '--'
         sanity = '--'
         deck_building = '--'
-        
+        story = '--'
+
     return [title,
             faction,
             tipe,
@@ -254,7 +287,8 @@ def get_card_info(soup):
             artist,
             expansion,
             flavor,
-            deck_building]
+            deck_building,
+            story]
 
 
 def get_title(soup): 
@@ -265,7 +299,7 @@ def get_title(soup):
     
     try:
         
-        subtitle = f": {soup.find('div', class_='card-subname small').text.strip()}"
+        subtitle = f" {soup.find('div', class_='card-subname small').text.strip()}"
         
     except:
         
@@ -288,13 +322,36 @@ def get_faction(soup):
     return faction.lower().strip()
 
 
+def get_health_sanity(soup):
+    '''Takes in html object parsed by BeautifulSoup
+       Returns health and sanity as a string'''
+
+    try:
+        
+        health = re.search('Health:\s+(\d)', str(soup.find('div'))).group(1).strip()
+        
+    except:
+        
+        health = '--'
+
+    try:
+        
+        sanity = re.search('Sanity:\s+(\d)', str(soup.find('div'))).group(1).strip()
+        
+    except:
+        
+        sanity = '--'
+
+    return health, sanity
+
+
 def get_ability(soup, first_faction):
     '''Takes in html object parsed by BeautifulSoup
        Returns card ability as a string'''
     
     try:
         
-        ability = soup.find('div', class_=f'card-text border-{first_faction}').text.replace('effect', 'ELDER SIGN')
+        ability = get_text_for_icon(soup.find('div', class_=f'card-text border-{first_faction}').text.replace('effect', 'ELDER SIGN'))
         
     except:
         
@@ -308,7 +365,7 @@ def get_flavor(soup):
        Returns card flavor text as a string'''
     try:
         
-        flavor = soup.find('div', class_='card-flavor small')[1].text.replace('\n', '').replace('\t', '')
+        flavor = soup.findasset.find('div', class_='card-flavor small').text.replace('\n', '').replace('\t', '')
 
     except:
         
@@ -373,6 +430,28 @@ def get_icons(soup):
             
     return icons.upper()[:-1]
 
+
+def get_story(soup):
+    '''Takes in html object parsed by BeautifulSoup
+       Returns card XP as a string'''
+    
+    try:
+
+        story = soup.find_all('div', class_='card-flavor small')[1].text.replace('\n', '').replace('\t', '')
+
+    except:
+
+        story = '--'
+
+    return story
+
+
+
+
+
+
 if __name__ == '__main__':
 
     get_card_df(get_urls()).to_csv('player_cards.csv',index = False)
+
+
