@@ -5,7 +5,7 @@ import re
 import pandas as pd
 from bs4 import BeautifulSoup
 
-#################################### scrape urls from website to scrape card information from ##############################################
+################################################# scrape urls from website ################################################################
 
 def get_urls():
     '''Returns a list of player card url's as strings''' 
@@ -80,52 +80,6 @@ def get_soup(url):
 
     return soup
 
-
-def get_text_for_icon(soup):
-    '''Takes in request response as a string
-       replaces html code indicating a game icon with a text representation
-       Returns sting with replacements'''
-    
-    # replace icon html with matching word in all caps
-    icon_types = ['action',
-                  'reaction',
-                  'wild', 
-                  'willpower', 
-                  'combat', 
-                  'agility', 
-                  'intellect', 
-                  'wild',
-                  'curse', 
-                  'bless',
-                  'rogue',
-                  'survivor',
-                  'seeker',
-                  'guardian',
-                  'mystic',
-                  'neutral',
-                  'skull',
-                  'tablet',
-                  'cultist',
-                  'elder sign']
-    
-    for icon in icon_types:
-    
-        soup = soup.replace(f'<span class="icon-{icon}" title="{icon.capitalize()}"></span>', f'{icon.upper()}')
-        
-        soup = soup.replace(f'<div class="card-text border-{icon}">\n<p>', '')
-
-    soup = soup.replace(f'<span class="icon-wild" title="Any Skill"></span>', 'WILD')
-
-    soup = soup.replace(f'<span class="icon-elder_sign" title="Elder Sign"></span>', 'ELDER_SIGN')
-
-    soup = soup.replace(f'<span class="icon-elder_thing" title="Elder Thing"></span>', 'ELDER_THING')
-
-    soup = soup.replace(f'<span class="icon-lightning" title="Fast Action"></span>', 'FAST_ACTION')
-
-    soup = soup.replace(f'<span class="icon-auto_fail" title="Auto Fail"></span>', 'TENTACLES')
-
-    return soup
-
 ############################### Use URL to scrape card descriptors and creare a dataframe ##########################################################
 
 def get_card_df(urls):
@@ -194,11 +148,11 @@ def get_card_info(soup):
     
     first_faction = faction.split(' ')[0] # for subsequent searches requiring faction
 
-    tipe = soup.find('p', class_='card-type').text.replace('.','').replace().lower().strip()
+    tipe = soup.find('p', class_='card-type').text.replace('.','').replace('hand x2','handx2').lower().strip()
     
     try:
     
-        traits = soup.find('p', class_='card-traits').text.replace('Silver Twilight','SilverTwilight').replace('hand x2','handx2').replace('.','').lower().strip()
+        traits = soup.find('p', class_='card-traits').text.replace('Silver Twilight','SilverTwilight').replace('.','').lower().strip()
     
     except:
         
@@ -349,13 +303,11 @@ def get_ability(soup, first_faction):
     '''Takes in html object parsed by BeautifulSoup
        Returns card ability as a string'''
     
-    try:
+    ability = str(soup.find('div', class_=f'card-text border-{first_faction}'))
         
-        ability = get_text_for_icon(soup.find('div', class_=f'card-text border-{first_faction}').text.replace('effect', 'ELDER SIGN'))
-        
-    except:
-        
-        ability = '--'
+    ability = get_text_for_icon(ability)
+
+    ability = clean_html_string(ability)
         
     return ability
 
@@ -445,10 +397,83 @@ def get_story(soup):
 
     return story
 
+############################ Convert html of icons to text represintation and clean text #############################################
+
+def get_text_for_icon(soup):
+    '''Takes in request response as a string
+       replaces html code indicating a game icon with a text representation
+       Returns sting with replacements'''
+    
+    # replace icon html with matching word in all caps
+    icon_types = ['action',
+                  'reaction',
+                  'wild', 
+                  'willpower', 
+                  'combat', 
+                  'agility', 
+                  'intellect', 
+                  'wild',
+                  'curse', 
+                  'bless',
+                  'rogue',
+                  'survivor',
+                  'seeker',
+                  'guardian',
+                  'mystic',
+                  'neutral',
+                  'skull',
+                  'tablet',
+                  'cultist',
+                  'elder sign']
+    
+    for icon in icon_types:
+    
+        soup = soup.replace(f'<span class="icon-{icon}" title="{icon.capitalize()}"></span>', f'{icon.upper()}')
+        
+        soup = soup.replace(f'<div class="card-text border-{icon}">\n<p>', '')
+
+    soup = soup.replace(f'<span class="icon-wild" title="Any Skill"></span>', 'WILD')
+
+    soup = soup.replace(f'<span class="icon-elder_sign" title="Elder Sign"></span>', 'ELDER_SIGN')
+
+    soup = soup.replace(f'<span class="icon-elder_thing" title="Elder Thing"></span>', 'ELDER_THING')
+
+    soup = soup.replace(f'<span class="icon-lightning" title="Fast Action"></span>', 'FAST_ACTION')
+
+    soup = soup.replace(f'<span class="icon-auto_fail" title="Auto Fail"></span>', 'TENTACLES')
+
+    return soup
 
 
+def clean_html_string(soup):
+    '''Takes in request response as a string
+       Removes common unwanted html patters from string
+       Returns string with patterns removed'''
+    
+    # remove each item in dirt from text
+    dirt = ['</p>\n</div>',
+            '</p>',
+            '<p>',
+            '<b>',
+            '</b>',
+            '<br/',
+            '<1>',
+            '<i>',
+            '</i>',
+            '><span>',
+            '</div>',
+            '<div class="card-text border-neutral">',
+            '<div class="card-text border-survivor">',
+            '<div class="card-text border-guardian">',
+            '<div class="card-text border-mystic">',
+            '<div class="card-text border-rouge">',
+            '<div class="card-text border-seeker">']
+    
+    for item in dirt:
+        
+        soup = soup.replace(item,'')
 
-
+    return soup
 
 if __name__ == '__main__':
 
