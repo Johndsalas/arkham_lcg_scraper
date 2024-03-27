@@ -109,7 +109,7 @@ def get_card_df(urls):
                  'story':[],
                  'url':[]}
 
-    print("Getting card descriptors...")
+    print("Getting cards...")
 
     # for each url get player card info from that page and add each element to descriptors
     for url in urls:
@@ -148,7 +148,7 @@ def get_card_info(soup):
     
     first_faction = faction.split(' ')[0] # for subsequent searches requiring faction
 
-    tipe = soup.find('p', class_='card-type').text.replace('.','').replace('hand x2','handx2').lower().strip()
+    tipe = soup.find('p', class_='card-type').text.replace('.','').replace('Hand x2','handx2').lower().strip()
     
     try:
     
@@ -162,7 +162,7 @@ def get_card_info(soup):
 
     artist = soup.find('div', class_='card-illustrator').text.replace('\n', '').replace('\t', '')
 
-    expansion = soup.find('div', class_='card-pack').text.replace('\n', '').replace('\t', '')
+    expansion = soup.find('div', class_='card-pack').text.replace('\n', '').replace('\t', '').replace('.', '')
 
     flavor = get_flavor(soup)
     
@@ -183,11 +183,11 @@ def get_card_info(soup):
     if tipe.split(' ')[0] in ('asset','investigator'):
         
         health, sanity = get_health_sanity(soup)
-        
+
     else:
-        
+
         health = '--'
-        
+
         sanity = '--'
             
     if tipe.split(' ')[0] in ('asset','event'):
@@ -219,8 +219,6 @@ def get_card_info(soup):
         intellect = '--'
         combat = '--'
         agility = '--'
-        health = '--'
-        sanity = '--'
         deck_building = '--'
         story = '--'
 
@@ -259,7 +257,6 @@ def get_title(soup):
         
         subtitle = ''
     
-    
     return title + subtitle
 
 
@@ -282,7 +279,7 @@ def get_health_sanity(soup):
 
     try:
         
-        health = re.search('Health:\s+(\d)', str(soup.find('div'))).group(1).strip()
+        health = re.search('Health:\s+(\d+)', str(soup.find('div'))).group(1).strip()
         
     except:
         
@@ -290,7 +287,7 @@ def get_health_sanity(soup):
 
     try:
         
-        sanity = re.search('Sanity:\s+(\d)', str(soup.find('div'))).group(1).strip()
+        sanity = re.search('Sanity:\s+(\d+)', str(soup.find('div'))).group(1).strip()
         
     except:
         
@@ -303,23 +300,22 @@ def get_ability(soup, first_faction):
     '''Takes in html object parsed by BeautifulSoup
        Returns card ability as a string'''
     
-    ability = str(soup.find('div', class_=f'card-text border-{first_faction}'))
+    soup = str(soup.find('div', class_=f'card-text border-{first_faction}'))
         
-    ability = get_text_for_icon(ability)
+    soup = get_text_for_icon(soup)
 
-    ability = clean_html_string(ability)
+    soup = re.sub(r'<[^<>]*>', '', soup)
         
-    return ability
+    return soup
 
 
 def get_flavor(soup):
     '''Takes in html object parsed by BeautifulSoup
        Returns card flavor text as a string'''
-    try:
-        
-        flavor = soup.findasset.find('div', class_='card-flavor small').text.replace('\n', '').replace('\t', '')
+  
+    flavor = soup.find('div', class_='card-flavor small').text.replace('\n', '').replace('\t', '')
 
-    except:
+    if flavor.strip() == '':
         
         flavor = '--'
         
@@ -444,36 +440,6 @@ def get_text_for_icon(soup):
 
     return soup
 
-
-def clean_html_string(soup):
-    '''Takes in request response as a string
-       Removes common unwanted html patters from string
-       Returns string with patterns removed'''
-    
-    # remove each item in dirt from text
-    dirt = ['</p>\n</div>',
-            '</p>',
-            '<p>',
-            '<b>',
-            '</b>',
-            '<br/',
-            '<1>',
-            '<i>',
-            '</i>',
-            '><span>',
-            '</div>',
-            '<div class="card-text border-neutral">',
-            '<div class="card-text border-survivor">',
-            '<div class="card-text border-guardian">',
-            '<div class="card-text border-mystic">',
-            '<div class="card-text border-rouge">',
-            '<div class="card-text border-seeker">']
-    
-    for item in dirt:
-        
-        soup = soup.replace(item,'')
-
-    return soup
 
 if __name__ == '__main__':
 
