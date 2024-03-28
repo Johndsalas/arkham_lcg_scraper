@@ -152,7 +152,7 @@ def get_card_info(soup):
     
     try:
     
-        traits = soup.find('p', class_='card-traits').text.replace('Silver Twilight','SilverTwilight').replace('.','').lower().strip()
+        traits = soup.find('p', class_='card-traits').text.replace('Silver Twilight','SilverTwilight').replace('.','').replace('  ', ' ').lower().strip()
     
     except:
         
