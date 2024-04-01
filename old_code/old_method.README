@@ -1,0 +1,7 @@
+## Method
+
+**main.py** - Scrapes URLs from search page by card type, calls functions from support files (invest.py, assets.py, events.py, and skills.py) to create data frames containing their respective card types, then writes the data frames to CSVs.
+
+**invest.py, assets.py, events.py, skills.py** - Each use URL’s gathered from main to scrape information from individual cards and create a data frame of its type. Helper functions common to each are imported from help.py
+
+**helper.py** - holds functions common to invest.py, assets.py, events.py, and skills.py to avoid repeating code.
