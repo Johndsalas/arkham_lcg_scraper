@@ -34,7 +34,7 @@ The goal of this project is to develop a web scraping script to gather data on p
 
 * Clone Repo into a local file
 * Run 'aquire.py' to get 'player_cards.csv'
-* if 'player_cards.scv' is in your current directory, run 'prepare.py' to get 'cleaned_player_cards.csv'
+* If 'player_cards.scv' is in your current directory, run 'prepare.py' to get 'cleaned_player_cards.csv' for a cleaner version of the data
 
 ## Opportunities for Further Improvement
 
