@@ -8,7 +8,8 @@ from bs4 import BeautifulSoup
 ################################################# scrape urls from website ################################################################
 
 def get_urls():
-    '''Returns a list of player card url's as strings''' 
+    ''' Scrapes arkham DB for player card URLs 
+        Returns a list of player card url's as strings''' 
        
     # calls get_cata_urls for each card type and extends urls to include all scraped urls 
     urls = []
@@ -83,9 +84,9 @@ def get_soup(url):
 ############################### Use URL to scrape card descriptors and creare a dataframe ##########################################################
 
 def get_card_df(urls):
-    '''Takes in urls for player cards and 
+    '''Takes in a list urls for player cards 
        Returns a df containing each cards information
-       Catagories that do not apply to a given card are returned with a value of -- '''
+       Null values are returned as -- '''
 
     # dictionary with empty traits
     card_dict = {'title':[],
@@ -166,7 +167,7 @@ def get_card_info(soup):
 
     flavor = get_flavor(soup)
     
-    # get sets of descriptors not common to all card types set misssing values to "--"
+    # get sets of descriptors not common to all card types set misssing values to --
     
     if tipe.split(' ')[0] in ('asset','event','skill'):
     
@@ -245,7 +246,7 @@ def get_card_info(soup):
 
 def get_title(soup): 
     '''Takes in html object parsed by BeautifulSoup
-       Returns card title as a string'''
+       Returns card title and subtitle as a string'''
     
     title = soup.find('a', class_='card-name card-tip').text.replace('\n', '').strip()
     
