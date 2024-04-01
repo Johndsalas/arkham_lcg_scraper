@@ -124,4 +124,4 @@ def remove_stopwords(value):
 
 if __name__ == '__main__':
 
-    full_clean().to_csv('cleaned.csv', index = False)
+    full_clean().to_csv('cleaned_player_cards.csv', index = False)
