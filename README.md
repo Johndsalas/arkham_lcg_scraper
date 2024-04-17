@@ -36,4 +36,4 @@ The goal of this project is to develop a web scraping script to gather data on p
 
 ## Special Thanks
 
-A big thank you to the wonderful folks at [Arkham DB](https://arkhamdb.com/) for making a great website, and not blocking my scraper!
+A big thank you to the wonderful folks at [Arkham DB](https://arkhamdb.com/) for making a great website and not blocking my scraper!
