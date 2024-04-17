@@ -1,4 +1,4 @@
-''' Script for cleaning data scraped using file main.py '''
+''' File contains optional cleaning functions that may be helpful when working with the data scrapped from main.py'''
 
 import pandas as pd
 import unicodedata
@@ -7,30 +7,13 @@ import nltk
 from nltk.tokenize.toktok import ToktokTokenizer
 nltk.download('stopwords')
 
-############################################### Main cleaning function ################################################################
-
-def full_clean():
-    ''' Clean data scraped using scraper in main.py '''
-
-    df = pd.read_csv('player_cards.csv')
-
-    # get dummy columns for columns with space seperated variables
-    for col in ['faction','type', 'traits']:
-
-        df = get_space_dummies(df, col)
-
-    for col in ['ability','story', 'flavor']:
-
-        df = prep_description(df, col)
-
-    return df
-
-#################### Encode variables with cell values that contain multiple space seperated values ##################################
+#################### Encode variables with cell values containing space seperated values ##################################
 
 def get_space_dummies(df, col):
     '''Takes in a dataframe and a column name as a string
        Column chould contain cells with multiple space seperated values 
        Returns dataframe with encoded column values (True/False) for each value in the original column '''
+    
     # get list of column values
     column_values = set(df[f'{col}'].tolist())
 
@@ -51,7 +34,7 @@ def get_space_dummies(df, col):
         
     return df
 
-############################################## Clean text columns ############################################################################### 
+############################################## Prepare text calumns for analysis ############################################################################### 
 
 def prep_description(df, col):
     ''' Takes in a dataframe and column name with text values as a string
@@ -120,8 +103,3 @@ def remove_stopwords(value):
 
     # convert list back into string and return value
     return ' '.join(filtered_list)
-
-
-if __name__ == '__main__':
-
-    full_clean().to_csv('cleaned_player_cards.csv', index = False)

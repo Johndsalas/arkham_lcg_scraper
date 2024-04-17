@@ -2,30 +2,23 @@
 
 ## Description and Goal
 
-The goal of this project is to develop a web scraping script to gather data on player cards from the Arkham Horror Living Card Game. The information will be scraped from Arkham DB and converted into four dataframes. (One for each card type) The data frames will be stored in separate csv files. Having this data in tabular form will give me a fun way to practice SQL commands while helping me perform more precise searches while choosing cards to use during the game. I also plan on undertaking a followup project where I use Tableau to explore how different factions in the game influence the games mechanics and card pool.
+The goal of this project is to develop a web scraping script to gather data on player cards from the Arkham Horror Living Card Game. Having this data in tabular form will give me a fun way to practice SQL commands while helping me perform more precise searches while choosing cards to use during the game. I also plan on undertaking a followup project where I use Tableau to explore how different factions in the game influence the games mechanics and card pool.
 
 **Note:** This project has been rewritten from its original form. A few days after finishing the project the Arkham DB got some major updates to its code base causing much of the previous version’s scraper to break. This gave me a chance to revisit the project and make some improvements. The old code and method have been preserved in the file old_code. 
 
 ## Method
 
-**aquire.py**
+**get_player_cards.py**
 
-1. Scrapes URLs from search page by card type and form them into one list
-2. For each URL request card make a request for information from that page and parse result using BeautifulSoup
+1. Scrape URLs from search page, by card type, and add them to a list
+2. For each URL request HTML from the corresponding page and parse result using BeautifulSoup
 3. Search parsed results for individual card descriptors and return the information as a list
 4. Add each descriptor as a value under the appropriate key in a dictionary and convert the dictionary to a dataframe
 5. write the data frame to a cvs file 'player_cards.csv'
 
-**clean.csv**
+**prepare_card_data.py**
 
-1. Reads data from 'player_cards.csv'
-2. Adds dummy columns for faction, type, and traits columns
-1. cleans, tokenizes, and lemmatizes text in ability, story, and flavor columns
-1. writes cleaned data to 'cleaned_player_cards.csv'
-
-**File Dependencies**
-
-* You must run 'aquire.py' and 'player_cards.csv' must be in your your current directory to run 'clean.csv'
+1. Contains optional cleaning functions for dataframe contained in 'player_cards.csv'
 
 **Using These Scripts**
 
@@ -33,8 +26,9 @@ The goal of this project is to develop a web scraping script to gather data on p
 * To run 'prepare.py' you will need access to the following libraries - unicodedata, nltk, pandas, and regex
 
 * Clone Repo into a local file
-* Run 'aquire.py' to get 'player_cards.csv'
+* Run 'get_player_cards.py' to get 'player_cards.csv'
 * If 'player_cards.scv' is in your current directory, run 'prepare.py' to get 'cleaned_player_cards.csv' for a cleaner version of the data
+* 'prepare_card_data.py' contains functions that you may find helpful when preparing data for your project. Feel free to use this code in your own project.  
 
 ## Opportunities for Further Improvement
 
@@ -42,4 +36,4 @@ The goal of this project is to develop a web scraping script to gather data on p
 
 ## Special Thanks
 
-A big thank you to the wonderful folks at Arkham DB for making a great website, and not blocking my scraper!
+A big thank you to the wonderful folks at [Arkham DB](https://arkhamdb.com/) for making a great website, and not blocking my scraper!
