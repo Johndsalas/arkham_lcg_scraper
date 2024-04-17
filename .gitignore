@@ -162,3 +162,4 @@ cython_debug/
 *csv
 
 extra_cleaning.ipynb
+.gitignore
