@@ -22,8 +22,8 @@ The goal of this project is to develop a web scraping script to gather data on p
 
 **Using These Scripts**
 
-* To run 'aquire.py' you will need access to the following libraries - requests, BeautifulSoup, pandas, and regex
-* To run 'prepare.py' you will need access to the following libraries - unicodedata, nltk, pandas, and regex
+* To run 'get_player_cards' you will need access to the following libraries - requests, BeautifulSoup, pandas, and regex
+* To run functions in 'prepare_card_data.py' you will need access to the following libraries - unicodedata, nltk, pandas, and regex
 
 * Clone Repo into a local file
 * Run 'get_player_cards.py' to get 'player_cards.csv'
