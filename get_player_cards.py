@@ -276,7 +276,7 @@ def get_faction(soup):
 
 def get_health_sanity(soup):
     '''Takes in html object parsed by BeautifulSoup
-       Returns health and sanity as a string'''
+       Returns health and sanity as strings'''
 
     try:
         

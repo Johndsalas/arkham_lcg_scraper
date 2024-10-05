@@ -11,7 +11,7 @@ nltk.download('stopwords')
 
 def get_space_dummies(df, col):
     '''Takes in a dataframe and a column name as a string
-       Column chould contain cells with multiple space seperated values 
+       Column should contain cells with multiple space seperated values 
        Returns dataframe with encoded column values (True/False) for each value in the original column '''
     
     # get list of column values
@@ -34,7 +34,7 @@ def get_space_dummies(df, col):
         
     return df
 
-############################################## Prepare text calumns for analysis ############################################################################### 
+############################################## Prepare text columns for analysis ############################################################################### 
 
 def prep_description(df, col):
     ''' Takes in a dataframe and column name with text values as a string
