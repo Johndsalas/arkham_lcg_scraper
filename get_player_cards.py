@@ -70,7 +70,6 @@ def get_cata_urls(catagory):
 
 def get_soup(url):
     '''Takes in a url as a string
-       Calls get_text_for_icon to replace html that generates card icons with text reperesintationss
        Returns html request result parsed using beautiful soup'''
 
     # create request and soup objects
@@ -179,7 +178,7 @@ def get_card_info(soup):
         
         icons = '--'
         
-        xp = '--'
+        xp = '0'
         
     if tipe.split(' ')[0] in ('asset','investigator'):
         
@@ -352,7 +351,7 @@ def get_xp(soup):
         
     except:
         
-        text = '--'
+        text = '0'
         
     return text
     
